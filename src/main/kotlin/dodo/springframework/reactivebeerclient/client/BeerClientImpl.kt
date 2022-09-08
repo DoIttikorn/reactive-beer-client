@@ -25,9 +25,25 @@ class BeerClientImpl(val webClient: WebClient) : BeerClient {
         beerStyle: String?,
         showInventoryOnHand: Boolean?
     ): Mono<BeerPagedList?> {
-        return webClient.get().uri(WebClientProperties().BEER_V1_PATH)
-            .retrieve()
-            .bodyToMono(BeerPagedList::class.java)
+        return webClient.get().uri { uriBuilder ->
+            var uri = uriBuilder.path(WebClientProperties().BEER_V1_PATH)
+            if (showInventoryOnHand != null) {
+                uri = uri.queryParam("showInventoryOnHand", showInventoryOnHand)
+            }
+            if (pageNumber != null) {
+                uri = uri.queryParam("pageNumber", pageNumber)
+            }
+            if (pageSize != null) {
+                uri = uri.queryParam("pageSize", pageSize)
+            }
+            if (beerName != null) {
+                uri = uri.queryParam("beerName", beerName)
+            }
+            if (beerStyle != null) {
+                uri = uri.queryParam("beerStyle", beerStyle)
+            }
+            uri.build()
+        }.retrieve().bodyToMono(BeerPagedList::class.java)
     }
 
     override fun createBeer(beerDto: BeerDto): Mono<ResponseEntity<BeerDto>> {

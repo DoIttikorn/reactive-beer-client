@@ -29,6 +29,24 @@ internal class BeerClientImplTest {
     }
 
     @Test
+    fun `listBeersPageSize 10`() {
+        val beerPagedListMono: Mono<BeerPagedList?> = beerClient.listBeers(1, 10, null, null, null)
+        val pagedList: BeerPagedList = beerPagedListMono.block()!!;
+
+        assertThat(pagedList).isNotNull;
+        assertThat(pagedList.content.size).isEqualTo(10);
+    }
+
+    @Test
+    fun listBeersNoRecords() {
+        val beerPagedListMono: Mono<BeerPagedList?> = beerClient.listBeers(10, 20, null, null, null)
+        val pagedList: BeerPagedList = beerPagedListMono.block()!!;
+
+        assertThat(pagedList).isNotNull;
+        assertThat(pagedList.content.size).isEqualTo(0);
+    }
+
+    @Test
     fun findBeerById() {
     }
 
