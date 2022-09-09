@@ -24,8 +24,6 @@ internal class BeerClientImplTest {
 
         assertThat(pagedList).isNotNull;
         assertThat(pagedList.content.size).isGreaterThan(0);
-        println()
-        println(pagedList.toString())
     }
 
     @Test
