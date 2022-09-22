@@ -10,12 +10,12 @@ interface BeerClient {
     fun findBeerById(id: UUID, showInventoryOnHand: Boolean): Mono<BeerDto>;
 
     fun listBeers(
-        pageNumber: Int,
-        pageSize: Int,
-        beerName: String,
-        beerStyle: String,
-        showInventoryOnHand: Boolean
-    ): Mono<BeerPagedList>;
+        pageNumber: Int?,
+        pageSize: Int?,
+        beerName: String?,
+        beerStyle: String?,
+        showInventoryOnHand: Boolean?
+    ): Mono<BeerPagedList?>;
 
     fun createBeer(beerDto: BeerDto): Mono<ResponseEntity<BeerDto>>;
 

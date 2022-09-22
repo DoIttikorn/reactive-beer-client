@@ -16,5 +16,5 @@ data class BeerDto(
     private val price: Double,
     private val quantityOnHand: Int,
     private val createdDate: OffsetDateTime,
-    private val lastModifiedDate: OffsetDateTime
+    private val lastModifiedDate: OffsetDateTime?
     )
