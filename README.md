@@ -7,3 +7,6 @@
 ## 3
 
 ## 4
+
+## 5
+assign getBy upc and getbyid inventory true
