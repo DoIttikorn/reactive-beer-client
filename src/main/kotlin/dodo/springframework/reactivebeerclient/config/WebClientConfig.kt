@@ -13,12 +13,15 @@ class WebClientConfig {
 
     @Bean
     fun webClient(): WebClient {
+//        What is WebClient
+//        that is set BSE_URL,
         return WebClient.builder()
             .baseUrl(WebClientProperties().BASE_URL)
             .clientConnector(
                 ReactorClientHttpConnector(
                     HttpClient.create()
                         .wiretap(
+                            //        set loglevel for debug test case
                             "reactor.netty.client.HttpClient", LogLevel.DEBUG,
                             AdvancedByteBufFormat.TEXTUAL
                         )

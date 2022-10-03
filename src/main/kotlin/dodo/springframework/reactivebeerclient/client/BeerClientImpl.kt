@@ -15,34 +15,25 @@ import java.util.*
 class BeerClientImpl(val webClient: WebClient) : BeerClient {
 
     override fun findBeerById(id: UUID, showInventoryOnHand: Boolean): Mono<BeerDto> {
-        TODO("Not yet implemented")
+        return webClient.get()
+            .uri { uriBuilder ->
+                uriBuilder.path(WebClientProperties().BEER_V1_PATH + "/" + id.toString())
+                    .queryParamIfPresent("showInventoryOnHand", Optional.ofNullable(showInventoryOnHand))
+                    .build()
+            }.retrieve().bodyToMono(BeerDto::class.java);
+
     }
 
     override fun listBeers(
-        pageNumber: Int?,
-        pageSize: Int?,
-        beerName: String?,
-        beerStyle: String?,
-        showInventoryOnHand: Boolean?
+        pageNumber: Int?, pageSize: Int?, beerName: String?, beerStyle: String?, showInventoryOnHand: Boolean?
     ): Mono<BeerPagedList?> {
         return webClient.get().uri { uriBuilder ->
-            var uri = uriBuilder.path(WebClientProperties().BEER_V1_PATH)
-            if (showInventoryOnHand != null) {
-                uri = uri.queryParam("showInventoryOnHand", showInventoryOnHand)
-            }
-            if (pageNumber != null) {
-                uri = uri.queryParam("pageNumber", pageNumber)
-            }
-            if (pageSize != null) {
-                uri = uri.queryParam("pageSize", pageSize)
-            }
-            if (beerName != null) {
-                uri = uri.queryParam("beerName", beerName)
-            }
-            if (beerStyle != null) {
-                uri = uri.queryParam("beerStyle", beerStyle)
-            }
-            uri.build()
+            uriBuilder.path(WebClientProperties().BEER_V1_PATH)
+                .queryParamIfPresent("pageNumber", Optional.ofNullable(pageNumber))
+                .queryParamIfPresent("pageSize", Optional.ofNullable(pageSize))
+                .queryParamIfPresent("beerName", Optional.ofNullable(beerName))
+                .queryParamIfPresent("beerStyle", Optional.ofNullable(beerStyle))
+                .queryParamIfPresent("showInventoryOnhand", Optional.ofNullable(showInventoryOnHand)).build()
         }.retrieve().bodyToMono(BeerPagedList::class.java)
     }
 
@@ -59,6 +50,11 @@ class BeerClientImpl(val webClient: WebClient) : BeerClient {
     }
 
     override fun getBeerByUpc(upc: String): Mono<BeerDto> {
-        TODO("Not yet implemented")
+        return webClient.get().uri {
+            it.path(WebClientProperties().BEER_V1_UPC_PATH + "/" + upc)
+                .build()
+        }
+            .retrieve()
+            .bodyToMono(BeerDto::class.java)
     }
 }
