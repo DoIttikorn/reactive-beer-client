@@ -6,14 +6,26 @@ import javax.validation.constraints.NotBlank
 import javax.validation.constraints.Null
 
 data class BeerDto(
-    @Null val id: UUID,
+    @Null val id: UUID?,
     @NotBlank
-    val beerName: String,
+    var beerName: String,
     @NotBlank
-    val beerStyle: String,
-    val upc: String,
-    val price: Double,
-    val quantityOnHand: Int,
-    val createdDate: OffsetDateTime,
-    val lastModifiedDate: OffsetDateTime?
-)
+    var beerStyle: String,
+    var upc: String,
+    var price: Double,
+    var quantityOnHand: Int,
+    var createdDate: OffsetDateTime?,
+    var lastModifiedDate: OffsetDateTime?
+) {
+
+    constructor(beerName: String, beerStyle: String, upc: String, price: Double, quantityOnHand: Int) : this(
+        null,
+        beerName,
+        beerStyle,
+        upc,
+        price,
+        quantityOnHand,
+        null,
+        null
+    )
+}

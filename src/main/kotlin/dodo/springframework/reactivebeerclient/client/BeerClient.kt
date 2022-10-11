@@ -24,4 +24,5 @@ interface BeerClient {
     fun deleteBeerById(id: UUID): Mono<ResponseEntity<Void>>;
 
     fun getBeerByUpc(upc: String): Mono<BeerDto>;
+    fun updateBeer(id: UUID, beerDto: BeerDto): Mono<ResponseEntity<Void>>
 }

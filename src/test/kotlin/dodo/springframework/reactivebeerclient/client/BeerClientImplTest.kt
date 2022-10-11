@@ -8,6 +8,8 @@ import org.hibernate.validator.internal.util.Contracts.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import reactor.core.publisher.Mono
 import java.util.*
 
@@ -91,17 +93,47 @@ internal class BeerClientImplTest {
         assertThat(beerDto?.upc.toString()).isEqualTo(upc)
 
     }
+
+    @Test
+    fun createBeer() {
+        val beerDto: BeerDto = BeerDto(
+            beerName = "BeerName",
+            beerStyle = "Ale",
+            upc = "123456789012",
+            quantityOnHand = 100,
+            price = 12.99
+        );
+        val responseEntityMono : Mono<ResponseEntity<BeerDto>> = beerClient.createBeer(beerDto);
+        val responseEntity: ResponseEntity<BeerDto>? = responseEntityMono.block();
+        assertThat(responseEntity?.statusCode).isEqualTo(HttpStatus.CREATED);
+    }
+    @Disabled("Disabled until we figure out localhost issue with WebClient")
+    @Test
+    fun updateBeer() {
+        val beerPagedListMono: Mono<BeerPagedList?> = beerClient.listBeers(null, null, null, null, true)
+        val pagedList: BeerPagedList = beerPagedListMono.block()!!;
+        val beerId: UUID = pagedList.content[0]?.id!!;
+        val beerFindByIdMono: Mono<BeerDto> = beerClient.findBeerById(beerId, true);
+        val beerDto: BeerDto = beerFindByIdMono.block()!!;
+
+
+//        beerDto.name = "New Beer Name";
+//        beerDto.price = 23234.99;
+        val responseEntityMono : Mono<ResponseEntity<Void>> = beerClient.updateBeer(beerDto.id!!, beerDto);
+        val responseEntity: ResponseEntity<Void>? = responseEntityMono.block();
+        assertThat(responseEntity?.statusCode).isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    fun deleteBeerById() {
+        val beerPagedListMono: Mono<BeerPagedList?> = beerClient.listBeers(null, null, null, null, true)
+        val pagedList: BeerPagedList = beerPagedListMono.block()!!;
+        val beerId: UUID = pagedList.content[0]?.id!!;
+        val responseEntityMono : Mono<ResponseEntity<Void>> = beerClient.deleteBeerById(beerId);
+        val responseEntity: ResponseEntity<Void>? = responseEntityMono.block();
+        assertThat(responseEntity?.statusCode).isEqualTo(HttpStatus.NO_CONTENT);
+    }
 }
 
-@Test
-fun createBeer() {
-}
 
-@Test
-fun updateBeer() {
-}
-
-@Test
-fun deleteBeerById() {
-}
 
