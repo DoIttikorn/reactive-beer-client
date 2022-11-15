@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import java.util.*
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.atomic.AtomicReference
 
 
 internal class BeerClientImplTest {
@@ -64,6 +66,25 @@ internal class BeerClientImplTest {
 
         assertThat(beerDto.id).isEqualTo(beerId);
         assertThat(beerDto.quantityOnHand).isNull();
+    }
+
+    //    learn reactive threading
+    @Test
+    fun functionalTestGetBeerById() {
+        val beerName: AtomicReference<String> = AtomicReference<String>();
+        val countDownLatch: CountDownLatch = CountDownLatch(1);
+        beerClient
+            .listBeers(null, null, null, null, false)
+            .map { beerPageList -> beerPageList?.content?.get(0)?.id }
+            .map { beerId -> beerClient.findBeerById(beerId!!, false) }
+            .flatMap { mono -> mono }
+            .subscribe { beerDto ->
+                beerName.set(beerDto.beerName)
+                countDownLatch.countDown()
+            }
+
+        countDownLatch.await();
+        assertThat(beerName.get()).isEqualTo("Mango Bobs");
     }
 
     @Test
