@@ -8,8 +8,10 @@ import org.hibernate.validator.internal.util.Contracts.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import java.util.*
 
@@ -83,9 +85,9 @@ internal class BeerClientImplTest {
         val beerPagedListMono: Mono<BeerPagedList?> = beerClient.listBeers(null, null, null, null, true)
         val pagedList: BeerPagedList = beerPagedListMono.block()!!;
 //        get id of first beer
-        val upc : String = pagedList.content[0]?.upc.toString();
+        val upc: String = pagedList.content[0]?.upc.toString();
 //        use id to get beer
-        val beerDtoMono:Mono<BeerDto> = beerClient.getBeerByUpc(upc);
+        val beerDtoMono: Mono<BeerDto> = beerClient.getBeerByUpc(upc);
         val beerDto: BeerDto? = beerDtoMono.block();
 //        check if beer is not null
         assertNotNull(beerDto);
@@ -103,10 +105,11 @@ internal class BeerClientImplTest {
             quantityOnHand = 100,
             price = 12.99
         );
-        val responseEntityMono : Mono<ResponseEntity<BeerDto>> = beerClient.createBeer(beerDto);
+        val responseEntityMono: Mono<ResponseEntity<BeerDto>> = beerClient.createBeer(beerDto);
         val responseEntity: ResponseEntity<BeerDto>? = responseEntityMono.block();
         assertThat(responseEntity?.statusCode).isEqualTo(HttpStatus.CREATED);
     }
+
     @Disabled("Disabled until we figure out localhost issue with WebClient")
     @Test
     fun updateBeer() {
@@ -119,17 +122,43 @@ internal class BeerClientImplTest {
 
 //        beerDto.name = "New Beer Name";
 //        beerDto.price = 23234.99;
-        val responseEntityMono : Mono<ResponseEntity<Void>> = beerClient.updateBeer(beerDto.id!!, beerDto);
+        val responseEntityMono: Mono<ResponseEntity<Void>> = beerClient.updateBeer(beerDto.id!!, beerDto);
         val responseEntity: ResponseEntity<Void>? = responseEntityMono.block();
         assertThat(responseEntity?.statusCode).isEqualTo(HttpStatus.NO_CONTENT);
     }
 
+    // learn how to test exceptions
+    @Test
+    fun testDeleteBeerHandleException() {
+        val responseEntityMono: Mono<ResponseEntity<Void>> = beerClient.deleteBeerById(UUID.randomUUID());
+        val responseEntity: ResponseEntity<Void>? = responseEntityMono.onErrorResume {
+            if (it is WebClientResponseException) {
+                Mono.just(ResponseEntity.status(it.statusCode).build())
+            } else {
+                Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build())
+            }
+        }.block();
+        assertThat(responseEntity?.statusCode).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    // learn how to test exceptions
+    @Test
+    fun deleteBeerByIdNotFound() {
+        val responseEntityMono: Mono<ResponseEntity<Void>> = beerClient.deleteBeerById(UUID.randomUUID());
+        assertThrows<WebClientResponseException> {
+            val responseEntity: ResponseEntity<Void>? = responseEntityMono.block();
+            assertThat(responseEntity?.statusCode).isEqualTo(HttpStatus.NOT_FOUND);
+
+        }
+    }
+
+    //learn delete beer
     @Test
     fun deleteBeerById() {
         val beerPagedListMono: Mono<BeerPagedList?> = beerClient.listBeers(null, null, null, null, true)
         val pagedList: BeerPagedList = beerPagedListMono.block()!!;
         val beerId: UUID = pagedList.content[0]?.id!!;
-        val responseEntityMono : Mono<ResponseEntity<Void>> = beerClient.deleteBeerById(beerId);
+        val responseEntityMono: Mono<ResponseEntity<Void>> = beerClient.deleteBeerById(beerId);
         val responseEntity: ResponseEntity<Void>? = responseEntityMono.block();
         assertThat(responseEntity?.statusCode).isEqualTo(HttpStatus.NO_CONTENT);
     }
